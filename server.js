@@ -19,7 +19,6 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// MySQL Connection
 // ต้องเพิ่ม fs เพื่ออ่านไฟล์ certificate (ถ้าจำเป็น)
 const fs = require('fs');
 
@@ -43,61 +42,10 @@ db.connect((err) => {
         console.log('Connected to MySQL');
     }
 });
-app.get('/api/profile/:user_id', (req, res) => {
-    const userId = req.params.userId;
-
-    // ดึงข้อมูลผู้ใช้จาก users
-    const userQuery = `SELECT user_id, name, age, gender, email FROM users WHERE user_id = ?`;
-    db.query(userQuery, [userId], (err, userResult) => {
-        if (err) {
-            console.error("Error fetching user:", err);
-            return res.status(500).send("Database error");
-        }
-        if (userResult.length === 0) {
-            return res.status(404).send("User not found");
-        }
-
-        const user = userResult[0];
-
-        // ดึงข้อมูล BMI
-        const bmiQuery = `SELECT weight, height, bmi FROM health_assessment WHERE user_id = ?`;
-        db.query(bmiQuery, [userId], (err, bmiResult) => {
-            if (err) {
-                console.error("Error fetching BMI:", err);
-                return res.status(500).send("Database error");
-            }
-
-            user.weight = bmiResult.length > 0 ? bmiResult[0].weight : null;
-            user.height = bmiResult.length > 0 ? bmiResult[0].height : null;
-            user.bmi = bmiResult.length > 0 ? bmiResult[0].bmi : null;
-
-            // ดึงข้อมูลโรคและแนวทางออกกำลังกาย
-            const diseaseQuery = `
-                SELECT d.name, ud.exercise_type, ud.detailed_guideline 
-                FROM user_diseases ud
-                JOIN diseases d ON ud.disease_id = d.disease_id
-                WHERE ud.user_id = ?
-            `;
-            db.query(diseaseQuery, [userId], (err, diseaseResults) => {
-                if (err) {
-                    console.error("Error fetching diseases:", err);
-                    return res.status(500).send("Database error");
-                }
-
-                user.diseases = diseaseResults.map(d => d.name).join(', ') || "None";
-                user.exercise_types = diseaseResults.map(d => d.exercise_type).join(', ') || "None";
-                user.detailed_guidelines = diseaseResults.map(d => d.detailed_guideline).join(', ') || "None";
-
-                // ส่งข้อมูลทั้งหมดกลับไป
-                res.json(user);
-            });
-        });
-    });
-});
 
 // API endpoint to get user profile data by user_id
-app.get('/api/profile/:user_id', (req, res) => {
-    const userId = req.params.user_id;
+app.get('/api/profile/:userId', (req, res) => {
+    const userId = req.params.userId;
 
     const query = `
     SELECT 

@@ -44,8 +44,8 @@ db.connect((err) => {
 });
 
 // API endpoint to get user profile data by user_id
-app.get('/api/profile/:userId', (req, res) => {
-    const userId = req.params.userId;
+app.get('/api/profile/:user_id', (req, res) => {
+    const userId = req.params.user_id;
 
     const query = `
     SELECT 

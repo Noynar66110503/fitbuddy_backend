@@ -43,58 +43,44 @@ db.connect((err) => {
         console.log('Connected to MySQL');
     }
 });
-app.get('/api/profile/:userID', (req, res) => {
+app.get('/api/profile/:userId', (req, res) => {
     const userId = req.params.user_id;
 
-    // ดึงข้อมูลผู้ใช้จาก users
-    const userQuery = `SELECT user_id, name, age, gender, email FROM users WHERE user_id = ?`;
-    db.query(userQuery, [userId], (err, userResult) => {
+    const query = `
+    SELECT 
+        u.user_id,
+        u.name,
+        u.age,
+        u.gender,
+        u.email,
+        ha.weight,
+        ha.height,
+        ha.bmi,
+        GROUP_CONCAT(DISTINCT d.name SEPARATOR ', ') AS diseases,
+        GROUP_CONCAT(DISTINCT ud.exercise_type SEPARATOR ', ') AS exercise_types,
+        GROUP_CONCAT(DISTINCT ud.detailed_guideline SEPARATOR ', ') AS detailed_guidelines
+    FROM users u
+    LEFT JOIN health_assessment ha ON u.user_id = ha.user_id
+    LEFT JOIN user_diseases ud ON u.user_id = ud.user_id
+    LEFT JOIN diseases d ON ud.disease_id = d.disease_id
+    WHERE u.user_id = ?
+    GROUP BY u.user_id, u.name, u.age, u.gender, u.email, ha.weight, ha.height, ha.bmi;
+    `;
+
+    db.query(query, [userId], (err, results) => {
         if (err) {
-            console.error("Error fetching user:", err);
-            return res.status(500).send("Database error");
-        }
-        if (userResult.length === 0) {
-            return res.status(404).send("User not found");
+            console.error('Error querying the database: ' + err.stack);
+            res.status(500).send('Database error');
+            return;
         }
 
-        const user = userResult[0];
-
-        // ดึงข้อมูล BMI
-        const bmiQuery = `SELECT weight, height, bmi FROM health_assessment WHERE user_id = ?`;
-        db.query(bmiQuery, [userId], (err, bmiResult) => {
-            if (err) {
-                console.error("Error fetching BMI:", err);
-                return res.status(500).send("Database error");
-            }
-
-            user.weight = bmiResult.length > 0 ? bmiResult[0].weight : null;
-            user.height = bmiResult.length > 0 ? bmiResult[0].height : null;
-            user.bmi = bmiResult.length > 0 ? bmiResult[0].bmi : null;
-
-            // ดึงข้อมูลโรคและแนวทางออกกำลังกาย
-            const diseaseQuery = `
-                SELECT d.name, ud.exercise_type, ud.detailed_guideline 
-                FROM user_diseases ud
-                JOIN diseases d ON ud.disease_id = d.disease_id
-                WHERE ud.user_id = ?
-            `;
-            db.query(diseaseQuery, [userId], (err, diseaseResults) => {
-                if (err) {
-                    console.error("Error fetching diseases:", err);
-                    return res.status(500).send("Database error");
-                }
-
-                user.diseases = diseaseResults.map(d => d.name).join(', ') || "None";
-                user.exercise_types = diseaseResults.map(d => d.exercise_type).join(', ') || "None";
-                user.detailed_guidelines = diseaseResults.map(d => d.detailed_guideline).join(', ') || "None";
-
-                // ส่งข้อมูลทั้งหมดกลับไป
-                res.json(user);
-            });
-        });
+        if (results.length > 0) {
+            res.json(results[0]);
+        } else {
+            res.status(404).send('User not found');
+        }
     });
 });
-
 
 app.post('/user-disease', (req, res) => {
     const { userId, diseaseId } = req.body;
@@ -127,22 +113,7 @@ app.post('/user-disease', (req, res) => {
     });
 });
 
-app.get('/api/profile/:userId', (req, res) => {
-    const userId = req.params.userId;
-    
-    // สมมุติว่าเรามีฟังก์ชัน getUserProfile ที่ดึงข้อมูลจากฐานข้อมูล
-    getUserProfile(userId)
-        .then(profile => {
-            if (!profile) {
-                return res.status(404).json({ message: 'ไม่พบข้อมูลผู้ใช้' });
-            }
-            res.json(profile);
-        })
-        .catch(error => {
-            console.error(error);
-            res.status(500).json({ message: 'เกิดข้อผิดพลาดในการดึงข้อมูล' });
-        });
-});
+
 app.put('/api/users/:userId', (req, res) => {
     const userId = req.params.userId;
     const { name, age, gender, phone, email } = req.body;

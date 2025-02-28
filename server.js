@@ -30,7 +30,7 @@ const db = mysql.createConnection({
     database: process.env.DB_NAME || 'fit_buddy',
     ssl: {
         // ถ้าจำเป็นต้องใช้ certificate
-        // ca: fs.readFileSync('./isrgrootx1.pem'),
+        ca: fs.readFileSync('isrgrootx1.pem'),
         rejectUnauthorized: true
     }
 });

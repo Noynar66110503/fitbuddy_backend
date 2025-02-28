@@ -43,7 +43,7 @@ db.connect((err) => {
         console.log('Connected to MySQL');
     }
 });
-app.get('/api/profile/:user_id', (req, res) => {
+app.get('/api/profile/:userID', (req, res) => {
     const userId = req.params.user_id;
 
     // ดึงข้อมูลผู้ใช้จาก users

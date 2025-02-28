@@ -9,7 +9,7 @@ const bcrypt = require('bcrypt');
 const app = express();
 const port = process.env.PORT || 3000;
 // Middleware
-
+app.use(cors()); 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -19,11 +19,7 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 const cors = require('cors');
-app.use(cors({
-  origin: ['https://fitbuddy-frontend.vercel.app', 'https://fitbuddy-frontend.vercel.app', '*'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true
-}));
+
 // MySQL Connection
 // ต้องเพิ่ม fs เพื่ออ่านไฟล์ certificate (ถ้าจำเป็น)
 const fs = require('fs');

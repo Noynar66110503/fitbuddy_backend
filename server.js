@@ -12,13 +12,7 @@ const port = process.env.PORT || 3000;
 app.use(cors()); 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, 'public')));
 
-// เพิ่มบรรทัดนี้หลังจาก app.use(express.static(...))
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-  
 // MySQL Connection
 // MySQL Connection with TiDB Cloud
 const db = mysql.createConnection({

@@ -14,7 +14,6 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 // MySQL Connection
-// MySQL Connection with TiDB Cloud
 const db = mysql.createConnection({
     host: 'gateway01.us-west-2.prod.aws.tidbcloud.com',
     user: '2h4VfjkR868Tumj.root',

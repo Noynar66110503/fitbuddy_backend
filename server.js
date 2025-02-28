@@ -43,8 +43,8 @@ db.connect((err) => {
         console.log('Connected to MySQL');
     }
 });
-app.get('/api/profile/:userId', (req, res) => {
-    const userId = req.params.user_id;
+app.get('/api/profile/:user_id', (req, res) => {
+    const userId = req.params.userId;
 
     // ดึงข้อมูลผู้ใช้จาก users
     const userQuery = `SELECT user_id, name, age, gender, email FROM users WHERE user_id = ?`;
@@ -95,6 +95,45 @@ app.get('/api/profile/:userId', (req, res) => {
     });
 });
 
+// API endpoint to get user profile data by user_id
+app.get('/api/profile/:user_id', (req, res) => {
+    const userId = req.params.user_id;
+
+    const query = `
+    SELECT 
+        u.user_id,
+        u.name,
+        u.age,
+        u.gender,
+        u.email,
+        ha.weight,
+        ha.height,
+        ha.bmi,
+        GROUP_CONCAT(DISTINCT d.name SEPARATOR ', ') AS diseases,
+        GROUP_CONCAT(DISTINCT ud.exercise_type SEPARATOR ', ') AS exercise_types,
+        GROUP_CONCAT(DISTINCT ud.detailed_guideline SEPARATOR ', ') AS detailed_guidelines
+    FROM users u
+    LEFT JOIN health_assessment ha ON u.user_id = ha.user_id
+    LEFT JOIN user_diseases ud ON u.user_id = ud.user_id
+    LEFT JOIN diseases d ON ud.disease_id = d.disease_id
+    WHERE u.user_id = ?
+    GROUP BY u.user_id, u.name, u.age, u.gender, u.email, ha.weight, ha.height, ha.bmi;
+    `;
+
+    db.query(query, [userId], (err, results) => {
+        if (err) {
+            console.error('Error querying the database: ' + err.stack);
+            res.status(500).send('Database error');
+            return;
+        }
+
+        if (results.length > 0) {
+            res.json(results[0]);
+        } else {
+            res.status(404).send('User not found');
+        }
+    });
+});
 
 app.post('/user-disease', (req, res) => {
     const { userId, diseaseId } = req.body;

@@ -18,7 +18,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
-const cors = require('cors');
 
 // MySQL Connection
 // ต้องเพิ่ม fs เพื่ออ่านไฟล์ certificate (ถ้าจำเป็น)

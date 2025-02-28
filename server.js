@@ -18,19 +18,15 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
-
-// ต้องเพิ่ม fs เพื่ออ่านไฟล์ certificate (ถ้าจำเป็น)
-const fs = require('fs');
-
-// MySQL Connection กับ TiDB Cloud
+  
+// MySQL Connection
+// MySQL Connection with TiDB Cloud
 const db = mysql.createConnection({
-    host: process.env.DB_HOST || 'gateway01.us-west-2.prod.aws.tidbcloud.com',
-    user: process.env.DB_USER || '2h4VfjkR868Tumj.root',
-    password: process.env.DB_PASS || 'z3XbxukerODq7ppv',
-    database: process.env.DB_NAME || 'fit_buddy',
+    host: 'gateway01.us-west-2.prod.aws.tidbcloud.com',
+    user: '2h4VfjkR868Tumj.root',
+    password: 'z3XbxukerODq7ppv',
+    database: 'fit_buddy',
     ssl: {
-        // ถ้าจำเป็นต้องใช้ certificate
-        ca: fs.readFileSync('isrgrootx1.pem'),
         rejectUnauthorized: true
     }
 });

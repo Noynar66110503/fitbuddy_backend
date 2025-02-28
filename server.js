@@ -63,8 +63,8 @@ app.post('/user-disease', (req, res) => {
     });
 });
 
-app.get('/api/profile/:userId', (req, res) => {
-    const userId = req.params.userId;
+app.get('/api/profile/:user_id', (req, res) => {
+    const userId = req.params.user_id;
 
     const query = `
     SELECT 
@@ -87,7 +87,7 @@ app.get('/api/profile/:userId', (req, res) => {
     GROUP BY u.user_id, u.name, u.age, u.gender, u.email, ha.weight, ha.height, ha.bmi;
     `;
 
-    db.query(query, [userId], (err, results) => {
+    db.query(query, [user_id], (err, results) => {
         if (err) {
             console.error('Error querying the database: ' + err.stack);
             res.status(500).send('Database error');
